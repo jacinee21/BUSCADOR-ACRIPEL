@@ -3,4 +3,3 @@ pytesseract
 easyocr
 pillow
 pandas
-re
