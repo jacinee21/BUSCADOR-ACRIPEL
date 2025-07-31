@@ -3,6 +3,7 @@ import streamlit as st
 from PIL import Image
 import pytesseract
 import pandas as pd
+import re
 import os
 
 st.set_page_config(page_title="Buscador de Imagens", layout="wide")
@@ -11,14 +12,11 @@ st.title("📦 Buscador de Imagens (OCR)")
 st.markdown("""
 Este app permite:
 - Fazer upload de várias imagens;
-- Ler o texto de cada imagem (OCR);
+- Ler apenas nomes de medicamentos (OCR);
 - Buscar por uma palavra ou termo específico;
 - Baixar os resultados em CSV.
 """)
 
-# Configurar o caminho da tessdata, necessário quando o idioma não é encontrado
-# Ajuste conforme necessário ou use 'eng' se 'por' não estiver disponível
-# pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 os.environ['TESSDATA_PREFIX'] = '/usr/share/tesseract-ocr/4.00/tessdata/'
 
 uploaded_files = st.file_uploader(
@@ -31,29 +29,32 @@ if uploaded_files:
     st.success(f"{len(uploaded_files)} imagens carregadas.")
 
     dados = []
-    with st.spinner("Lendo o texto das imagens... Pode levar um tempo se forem muitas imagens."):
+    with st.spinner("Lendo os nomes de medicamentos nas imagens... Pode levar um tempo."):
         for uploaded_file in uploaded_files:
             image = Image.open(uploaded_file)
             try:
-                texto = pytesseract.image_to_string(image, lang='por')
+                texto_completo = pytesseract.image_to_string(image, lang='por')
+                # Extrair apenas possíveis nomes de medicamentos (exemplo: palavras em maiúsculo com 3+ letras)
+                nomes_medicamentos = re.findall(r'\b[A-ZÁÉÍÓÚÇÑ]{3,}\b', texto_completo)
+                texto_filtrado = ', '.join(nomes_medicamentos)
             except Exception as e:
                 st.error(f"❗ Erro ao processar OCR: {e}")
-                texto = "[Erro ao processar OCR]"
+                texto_filtrado = "[Erro ao processar OCR]"
             dados.append({
                 'Nome da Imagem': uploaded_file.name,
-                'Texto Extraído': texto
+                'Nomes de Medicamentos Detectados': texto_filtrado
             })
 
     df = pd.DataFrame(dados)
 
-    st.subheader("Texto extraído de cada imagem")
+    st.subheader("Nomes de medicamentos extraídos de cada imagem")
     st.dataframe(df)
 
-    termo = st.text_input("🔍 Digite uma palavra ou termo para buscar nas imagens:")
+    termo = st.text_input("🔍 Digite um nome ou termo para buscar nas imagens:")
 
     if termo:
-        termo_lower = termo.lower()
-        resultado = df[df['Texto Extraído'].str.lower().str.contains(termo_lower)]
+        termo_upper = termo.upper()
+        resultado = df[df['Nomes de Medicamentos Detectados'].str.upper().str.contains(termo_upper)]
 
         st.subheader(f"Resultados contendo: '{termo}'")
         st.dataframe(resultado)
