@@ -1,4 +1,4 @@
-# streamlit
-# pytesseract
-# pillow
-# pandas
+streamlit
+pytesseract
+pillow
+pandas
