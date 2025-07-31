@@ -1,8 +1,8 @@
+# app.py
 import streamlit as st
 from PIL import Image
 import pytesseract
 import pandas as pd
-import io
 
 st.set_page_config(page_title="Buscador de Imagens", layout="wide")
 st.title("📦 Buscador de Imagens (OCR)")
@@ -24,8 +24,7 @@ uploaded_files = st.file_uploader(
 if uploaded_files:
     st.success(f"{len(uploaded_files)} imagens carregadas.")
 
-    dados = []  # Para guardar: nome da imagem + texto extraído
-
+    dados = []
     with st.spinner("Lendo o texto das imagens... Pode levar um tempo se forem muitas imagens."):
         for uploaded_file in uploaded_files:
             image = Image.open(uploaded_file)
@@ -61,3 +60,9 @@ if uploaded_files:
     st.markdown("App feito com ❤️ usando Streamlit e pytesseract.")
 else:
     st.info("Por favor, faça upload de pelo menos uma imagem para começar.")
+
+# requirements.txt
+# streamlit
+# pytesseract
+# pillow
+# pandas
