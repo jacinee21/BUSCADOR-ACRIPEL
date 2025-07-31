@@ -6,7 +6,7 @@ import pandas as pd
 import re
 
 st.set_page_config(page_title="Buscador de Imagens", layout="wide")
-st.title("📦 Buscador de Imagens (OCR mais preciso)")
+st.title("📦 Buscador de Imagens (OCR mais preciso com EasyOCR)")
 
 st.markdown("""
 Este app permite:
@@ -16,7 +16,7 @@ Este app permite:
 - Baixar os resultados em CSV.
 """)
 
-# Inicializar leitor do easyocr (suporta português)
+# Inicializar o leitor do EasyOCR (suporta português)
 reader = easyocr.Reader(['pt'])
 
 # Lista de palavras comuns a ignorar
@@ -36,14 +36,11 @@ if uploaded_files:
         for uploaded_file in uploaded_files:
             image = Image.open(uploaded_file)
             try:
-                # Realizar OCR usando easyocr
+                # Realizar OCR usando EasyOCR
                 resultados = reader.readtext(image, detail=0, paragraph=True)
                 texto_completo = ' '.join(resultados)
-                # Limpeza: remover caracteres especiais e números
                 texto_limpo = re.sub(r'[^A-Za-zÁÉÍÓÚÇÑáéíóúçñ\s]', '', texto_completo)
-                # Extrair palavras em maiúsculo (3+ letras)
                 nomes_possiveis = re.findall(r'\b[A-ZÁÉÍÓÚÇÑ]{3,}\b', texto_limpo.upper())
-                # Remover palavras da lista de ignorar
                 nomes_filtrados = [nome for nome in nomes_possiveis if nome not in palavras_ignorar]
                 nomes_unicos = list(dict.fromkeys(nomes_filtrados))
                 texto_final = ', '.join(nomes_unicos)
@@ -78,7 +75,7 @@ if uploaded_files:
         )
 
     st.markdown("---")
-    st.markdown("App feito com ❤️ usando Streamlit e easyocr.")
+    st.markdown("App feito com ❤️ usando Streamlit e EasyOCR.")
 else:
     st.info("Por favor, faça upload de pelo menos uma imagem para começar.")
 
