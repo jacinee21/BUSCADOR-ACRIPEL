@@ -3,6 +3,7 @@ import streamlit as st
 from PIL import Image
 import pytesseract
 import pandas as pd
+import os
 
 st.set_page_config(page_title="Buscador de Imagens", layout="wide")
 st.title("📦 Buscador de Imagens (OCR)")
@@ -14,6 +15,11 @@ Este app permite:
 - Buscar por uma palavra ou termo específico;
 - Baixar os resultados em CSV.
 """)
+
+# Configurar o caminho da tessdata, necessário quando o idioma não é encontrado
+# Ajuste conforme necessário ou use 'eng' se 'por' não estiver disponível
+# pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+os.environ['TESSDATA_PREFIX'] = '/usr/share/tesseract-ocr/4.00/tessdata/'
 
 uploaded_files = st.file_uploader(
     "Faça upload das imagens (pode selecionar várias)",
@@ -28,7 +34,11 @@ if uploaded_files:
     with st.spinner("Lendo o texto das imagens... Pode levar um tempo se forem muitas imagens."):
         for uploaded_file in uploaded_files:
             image = Image.open(uploaded_file)
-            texto = pytesseract.image_to_string(image, lang='por')
+            try:
+                texto = pytesseract.image_to_string(image, lang='por')
+            except Exception as e:
+                st.error(f"❗ Erro ao processar OCR: {e}")
+                texto = "[Erro ao processar OCR]"
             dados.append({
                 'Nome da Imagem': uploaded_file.name,
                 'Texto Extraído': texto
@@ -66,3 +76,7 @@ else:
 # pytesseract
 # pillow
 # pandas
+
+# packages.txt
+# tesseract-ocr
+# tesseract-ocr-por
